@@ -67,7 +67,7 @@ public final class WebViewFitContent extends Region {
                 Object result = webEngine.executeScript("document.getElementById('mydiv').offsetHeight");
                 if (result instanceof Integer) {
                     double height = (Integer) result;
-                    height = height + 20;
+                    height = height + 30;
                     webview.setPrefHeight(height);
                     webview.getPrefHeight();
                 }
