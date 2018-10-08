@@ -9,8 +9,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -87,48 +85,9 @@ public class Controller {
 
         setupPreferencesOfInvestigation();
 
-        changeDirectoryOfPostVersionLists();
+        setDirectoryOfPostVersionLists();
 
         unionRadioButtonsForDiffToSameGroup();
-    }
-
-
-    /* Setup of directory to post version lists */
-    @FXML
-    private void changeDirectoryOfPostVersionLists() {
-        setPathToRootOfPostVersionLists();
-        indexPostVersionListsInSelectedPath();
-    }
-
-    // helping methods for setup of directory
-    private void setPathToRootOfPostVersionLists() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        try {
-            directoryChooser.setInitialDirectory(pathToSelectedRootOfPostVersionLists.toFile());
-        } catch (Exception ignored) { }
-        directoryChooser.setTitle("Select directory of your Post Version Lists");
-        File selectedDirectory = directoryChooser.showDialog(new Stage());
-        pathToSelectedRootOfPostVersionLists = Paths.get(String.valueOf(selectedDirectory));
-    }
-
-    private void indexPostVersionListsInSelectedPath() {
-        File[] postVersionListsInCSVFiles = pathToSelectedRootOfPostVersionLists.toFile().listFiles((directory, name) -> name.matches("\\d+\\.csv"));
-        if (postVersionListsInCSVFiles == null) {
-            return;
-        }
-
-        allIndexedPostVersionLists = new HashMap<>();
-        for (File postVersionListsInCSVFile : postVersionListsInCSVFiles) {
-            allIndexedPostVersionLists.put(Integer.valueOf(postVersionListsInCSVFile.getName().replace(".csv", "")), postVersionListsInCSVFile);
-        }
-    }
-
-    private void unionRadioButtonsForDiffToSameGroup() {
-        radioButtonShowNoDiffs.setToggleGroup(group);
-        radioButtonShowDiffsOfGroundTruth.setToggleGroup(group);
-        radioButtonShowDiffsOfComputedSimilarity.setToggleGroup(group);
-
-        radioButtonShowNoDiffs.setSelected(true);
     }
 
     private void setupPreferencesOfInvestigation () {
@@ -163,9 +122,50 @@ public class Controller {
                 errorTypeToInvestigate = ErrorTypeToInvestigate.falseNegatives;
             }
         }
-
-
     }
+
+
+    /* Setup of directory to post version lists */
+    @FXML
+    private void setDirectoryOfPostVersionLists() {
+        setPathToRootOfPostVersionLists();
+        indexPostVersionListsInRootPath();
+    }
+
+    // helping methods for setup of directory
+    private void setPathToRootOfPostVersionLists() {
+        if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text && errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fp_text");
+        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text && errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fn_text");
+        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code && errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fp_code");
+        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code && errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fn_code");
+        }
+    }
+
+    private void indexPostVersionListsInRootPath() {
+        File[] postVersionListsInCSVFiles = pathToSelectedRootOfPostVersionLists.toFile().listFiles((directory, name) -> name.matches("\\d+\\.csv"));
+        if (postVersionListsInCSVFiles == null) {
+            return;
+        }
+
+        allIndexedPostVersionLists = new HashMap<>();
+        for (File postVersionListsInCSVFile : postVersionListsInCSVFiles) {
+            allIndexedPostVersionLists.put(Integer.valueOf(postVersionListsInCSVFile.getName().replace(".csv", "")), postVersionListsInCSVFile);
+        }
+    }
+
+    private void unionRadioButtonsForDiffToSameGroup() {
+        radioButtonShowNoDiffs.setToggleGroup(group);
+        radioButtonShowDiffsOfGroundTruth.setToggleGroup(group);
+        radioButtonShowDiffsOfComputedSimilarity.setToggleGroup(group);
+
+        radioButtonShowNoDiffs.setSelected(true);
+    }
+
+
 
     /* GUI */
     private void visualizeInGUI() {
@@ -298,7 +298,7 @@ public class Controller {
     private void paintConnectionsBetweenPostBlocks() {
         if (checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
                     Polygon polygon = paintPolygonOfConnections(blockPair.rightBlock, blockPair.leftBlock);
                     connectionsPane.getChildren().add(polygon);
                 }
@@ -307,26 +307,12 @@ public class Controller {
 
         if (checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
                     Line line = paintLineOfConnections(blockPair.rightBlock, blockPair.leftBlock);
                     connectionsPane.getChildren().add(line);
                 }
             }
         }
-    }
-
-    private Line paintLineOfConnections(PostBlockWebView leftBlock, PostBlockWebView rightBlock) {
-        Line line = new Line(
-                leftBlock.webViewFitContent.webview.getLayoutX() + leftBlock.webViewFitContent.webview.getWidth(),
-                leftBlock.webViewFitContent.webview.getLayoutY() + leftBlock.webViewFitContent.webview.getHeight() / 2,
-                rightBlock.webViewFitContent.webview.getLayoutX(),
-                rightBlock.webViewFitContent.webview.getLayoutY() + rightBlock.webViewFitContent.webview.getHeight() / 2
-        );
-
-        line.setStrokeWidth(10);
-        line.setStroke(Color.GRAY);
-
-        return line;
     }
 
     private Polygon paintPolygonOfConnections(PostBlockWebView leftBlock, PostBlockWebView rightBlock) {
@@ -352,12 +338,26 @@ public class Controller {
         return polygon;
     }
 
+    private Line paintLineOfConnections(PostBlockWebView leftBlock, PostBlockWebView rightBlock) {
+        Line line = new Line(
+                leftBlock.webViewFitContent.webview.getLayoutX() + leftBlock.webViewFitContent.webview.getWidth(),
+                leftBlock.webViewFitContent.webview.getLayoutY() + leftBlock.webViewFitContent.webview.getHeight() / 2,
+                rightBlock.webViewFitContent.webview.getLayoutX(),
+                rightBlock.webViewFitContent.webview.getLayoutY() + rightBlock.webViewFitContent.webview.getHeight() / 2
+        );
+
+        line.setStrokeWidth(10);
+        line.setStroke(Color.GRAY);
+
+        return line;
+    }
+
     private void visualizeDiffsOnRightSide() {
         if (group.getSelectedToggle() == radioButtonShowDiffsOfGroundTruth
                 && checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -369,7 +369,7 @@ public class Controller {
                 && checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -486,7 +486,7 @@ public class Controller {
         importConnectionsOfComputedSimilarity();
 
         postVersionsThatShouldBeInvestigated = new boolean[currentPostVersionList.size()];
-        identifyPostHistoriesWithIdenticalConnectionsOfGroundTruthAndComputedSimilarity();
+        identifyPostHistoriesToInvestigateBasedOnUsersPreferences();
 
         visualizeInGUI();
     }
@@ -602,10 +602,17 @@ public class Controller {
         }
     }
 
-    private void identifyPostHistoriesWithIdenticalConnectionsOfGroundTruthAndComputedSimilarity(){
+    private void identifyPostHistoriesToInvestigateBasedOnUsersPreferences(){
         for (int i=0; i<currentPostVersionList.size(); i++) {
             PostVersion postVersion = currentPostVersionList.get(i);
-            postVersionsThatShouldBeInvestigated[i] = shouldPostVersionBeInvestigated(postVersion);
+            switch (errorTypeToInvestigate) {
+                case falsePositives:
+                    postVersionsThatShouldBeInvestigated[i] = containsFalsePositives(postVersion);
+                    break;
+                case falseNegatives:
+                    postVersionsThatShouldBeInvestigated[i] = containsFalseNegatives(postVersion);
+                    break;
+            }
         }
 
         popUpWindowIfNoDifferencesAreFound();
@@ -613,7 +620,37 @@ public class Controller {
         postVersionsThatShouldBeInvestigated[0] = true; // to show at least the first two versions
     }
 
-    private boolean shouldPostVersionBeInvestigated(PostVersion postVersion) {
+    private boolean containsFalsePositives(PostVersion postVersion) {
+        List<String> connectionsInGT = getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(postVersion);
+        List<String> connectionsInCS = getAllConnectionsFromComputedSimilarityThatAreSubjectOfInvestigation(postVersion);
+
+        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
+            for (String connectionInCS : connectionsInCS) {
+                if (!connectionsInGT.contains(connectionInCS)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean containsFalseNegatives(PostVersion postVersion) {
+        List<String> connectionsInGT = getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(postVersion);
+        List<String> connectionsInCS = getAllConnectionsFromComputedSimilarityThatAreSubjectOfInvestigation(postVersion);
+
+        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
+            for (String connectionInGT : connectionsInGT) {
+                if (!connectionsInCS.contains(connectionInGT)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private List<String> getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(PostVersion postVersion) {
         // get all post blocks of current post version
         List<BlockPair> blockPairsInCurrentPostVersionOfGT = new ArrayList<>();
         for (BlockPair blockPairsGT : blockPairs_groundTruth) {
@@ -622,14 +659,7 @@ public class Controller {
             }
         }
 
-        List<BlockPair> blockPairsInCurrentPostVersionOfCS = new ArrayList<>();
-        for (BlockPair blockPairsCS : blockPairs_computedSimilarity) {
-            if (blockPairsCS.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
-                blockPairsInCurrentPostVersionOfCS.add(blockPairsCS);
-            }
-        }
-
-        // get all connections from ground truth and computed similarity that are subject of investigation
+        // get all connections from ground truth that are subject of investigation
         List<String> connectionsInGT = new ArrayList<>();
         for (BlockPair blockPair : blockPairsInCurrentPostVersionOfGT) {
 
@@ -644,7 +674,19 @@ public class Controller {
                             blockPair.rightBlock.postBlock.getLocalId()
             );
         }
+        return connectionsInGT;
+    }
 
+    private List<String> getAllConnectionsFromComputedSimilarityThatAreSubjectOfInvestigation(PostVersion postVersion) {
+        // get all post blocks of current post version
+        List<BlockPair> blockPairsInCurrentPostVersionOfCS = new ArrayList<>();
+        for (BlockPair blockPairsCS : blockPairs_computedSimilarity) {
+            if (blockPairsCS.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
+                blockPairsInCurrentPostVersionOfCS.add(blockPairsCS);
+            }
+        }
+
+        // get all connections from computed similarity that are subject of investigation
         List<String> connectionsInCS = new ArrayList<>();
         for (BlockPair blockPair : blockPairsInCurrentPostVersionOfCS) {
 
@@ -659,25 +701,7 @@ public class Controller {
                             (blockPair.leftBlock.postBlock.getSucc() != null ? blockPair.leftBlock.postBlock.getSucc().getLocalId() : null)
             );
         }
-
-
-        // mark version that should be investigated based on the user's preferences
-        boolean postVersionShouldBeInvestigated = false;
-        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
-            for (String connectionInCS : connectionsInCS) {
-                if (!connectionsInGT.contains(connectionInCS)) {
-                    postVersionShouldBeInvestigated = true;
-                }
-            }
-        } else if (errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
-            for (String connectionInGT : connectionsInGT) {
-                if (!connectionsInCS.contains(connectionInGT)) {
-                    postVersionShouldBeInvestigated = true;
-                }
-            }
-        }
-
-        return postVersionShouldBeInvestigated;
+        return connectionsInCS;
     }
 
     private boolean matchesPostBlockTypeOfInvestigation(BlockPair blockPair) {
@@ -693,18 +717,8 @@ public class Controller {
     }
 
 
-
-
     private void popUpWindowIfNoDifferencesAreFound() {
-        boolean differenceInConnectionsFound = false;
-        for (boolean differenceInConnection : postVersionsThatShouldBeInvestigated) {
-            if (differenceInConnection) {
-                differenceInConnectionsFound = true;
-                break;
-            }
-        }
-
-        if (!differenceInConnectionsFound) {
+        if (!foundDifferencesInConnections()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information about the connections");
             alert.setHeaderText(null);
@@ -712,6 +726,15 @@ public class Controller {
 
             alert.showAndWait();
         }
+    }
+
+    private boolean foundDifferencesInConnections() {
+        for (boolean differenceInConnection : postVersionsThatShouldBeInvestigated) {
+            if (differenceInConnection) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
