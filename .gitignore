@@ -1,1 +1,3 @@
 .idea/
+target/classes/de/unitrier/st/soposthistory/gt/ComparatorAppOfGroundTruthAndComputedSimilarity/
+logs/
