@@ -1,3 +1,49 @@
+# git config --global core.excludesfile ~/.gitignore
+
+######################
+# OS generated files #
+######################
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+#Icon?
+ehthumbs.db
+Thumbs.db
+
+##############
+# Java/Scala #
+##############
+*.class
+
+##########################
+# Webstorm/IntelliJ IDEA #
+##########################
 .idea/
-target/classes/de/unitrier/st/soposthistory/gt/ComparatorAppOfGroundTruthAndComputedSimilarity/
-logs/
+*.iml
+
+#########
+# Excel #
+#########
+~$*
+
+###########
+# RStudio #
+###########
+.Rhistory
+.RData
+
+#########
+# Maven #
+#########
+target/
+
+########
+# Misc #
+########
+PostId_VersionCount_SO_17-06.csv
+PostId_VersionCount_SO_Java_17-06.csv
+logs/*
+releases/
