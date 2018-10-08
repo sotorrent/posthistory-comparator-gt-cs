@@ -63,7 +63,7 @@ public class Controller {
     private Path pathToSelectedRootOfPostVersionLists;
     private Map<Integer, File> allIndexedPostVersionLists;
     private PostVersionList currentPostVersionList;
-    private boolean[] postVersionsWithDifferentLinks;
+    private boolean[] postVersionsThatShouldBeInvestigated;
 
     private List<javafx.scene.Node> allElementsInGUI = new ArrayList<>();
 
@@ -75,8 +75,17 @@ public class Controller {
     private ToggleGroup group = new ToggleGroup();
 
 
+    private enum PostBlockTypeToInvestigate {Text, Code}
+    private enum ErrorTypeToInvestigate {falsePositives, falseNegatives}
+
+    private PostBlockTypeToInvestigate postBlockTypeToInvestigate;
+    private ErrorTypeToInvestigate errorTypeToInvestigate;
+
+
     @FXML
     private void initialize(){
+
+        setupPreferencesOfInvestigation();
 
         changeDirectoryOfPostVersionLists();
 
@@ -96,8 +105,7 @@ public class Controller {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         try {
             directoryChooser.setInitialDirectory(pathToSelectedRootOfPostVersionLists.toFile());
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) { }
         directoryChooser.setTitle("Select directory of your Post Version Lists");
         File selectedDirectory = directoryChooser.showDialog(new Stage());
         pathToSelectedRootOfPostVersionLists = Paths.get(String.valueOf(selectedDirectory));
@@ -123,7 +131,41 @@ public class Controller {
         radioButtonShowNoDiffs.setSelected(true);
     }
 
+    private void setupPreferencesOfInvestigation () {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Setup preferences of investigation");
+        alert.setHeaderText("Choose the types you like to investigate:");
 
+        ButtonType falsePositivesCode = new ButtonType("False positives for code");
+        ButtonType falseNegativesCode = new ButtonType("False negatives for code");
+        ButtonType falsePositivesText = new ButtonType("False positives for text");
+        ButtonType falseNegativesText = new ButtonType("False negatives for text");
+
+        // Remove default ButtonTypes
+        alert.getButtonTypes().clear();
+
+        alert.getButtonTypes().addAll(falsePositivesCode, falseNegativesCode, falsePositivesText, falseNegativesText);
+
+        Optional<ButtonType> option = alert.showAndWait();
+
+        if (option.isPresent()) {
+            if (option.get() == falsePositivesCode) {
+                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Code;
+                errorTypeToInvestigate = ErrorTypeToInvestigate.falsePositives;
+            } else if (option.get() == falseNegativesCode) {
+                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Code;
+                errorTypeToInvestigate = ErrorTypeToInvestigate.falseNegatives;
+            } else if (option.get() == falsePositivesText) {
+                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Text;
+                errorTypeToInvestigate = ErrorTypeToInvestigate.falsePositives;
+            } else if (option.get() == falseNegativesText) {
+                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Text;
+                errorTypeToInvestigate = ErrorTypeToInvestigate.falseNegatives;
+            }
+        }
+
+
+    }
 
     /* GUI */
     private void visualizeInGUI() {
@@ -256,11 +298,7 @@ public class Controller {
     private void paintConnectionsBetweenPostBlocks() {
         if (checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
-
-                    blockPair.leftBlock.webViewFitContent.setContent(convertMarkdownToHTML(blockPair.leftBlock.postBlock, BlockBorderColorStatus.blockConnectionSet));
-                    blockPair.leftBlock.webViewFitContent.webview.getEngine().loadContent(convertMarkdownToHTML(blockPair.leftBlock.postBlock, BlockBorderColorStatus.blockConnectionSet));
-
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
                     Polygon polygon = paintPolygonOfConnections(blockPair.rightBlock, blockPair.leftBlock);
                     connectionsPane.getChildren().add(polygon);
                 }
@@ -269,13 +307,8 @@ public class Controller {
 
         if (checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
-
-                    blockPair.leftBlock.webViewFitContent.setContent(convertMarkdownToHTML(blockPair.leftBlock.postBlock, BlockBorderColorStatus.blockConnectionSet));
-                    blockPair.leftBlock.webViewFitContent.webview.getEngine().loadContent(convertMarkdownToHTML(blockPair.leftBlock.postBlock, BlockBorderColorStatus.blockConnectionSet));
-
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
                     Line line = paintLineOfConnections(blockPair.rightBlock, blockPair.leftBlock);
-
                     connectionsPane.getChildren().add(line);
                 }
             }
@@ -324,7 +357,7 @@ public class Controller {
                 && checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -336,7 +369,7 @@ public class Controller {
                 && checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == currentLeftVersionInViewedPost && matchesPostBlockTypeOfInvestigation(blockPair)) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -452,7 +485,7 @@ public class Controller {
         importConnectionsOfGroundTruth();
         importConnectionsOfComputedSimilarity();
 
-        postVersionsWithDifferentLinks = new boolean[currentPostVersionList.size()];
+        postVersionsThatShouldBeInvestigated = new boolean[currentPostVersionList.size()];
         identifyPostHistoriesWithIdenticalConnectionsOfGroundTruthAndComputedSimilarity();
 
         visualizeInGUI();
@@ -570,57 +603,101 @@ public class Controller {
     }
 
     private void identifyPostHistoriesWithIdenticalConnectionsOfGroundTruthAndComputedSimilarity(){
-        for (int i=0; i<currentPostVersionList.size()-1; i++) {
+        for (int i=0; i<currentPostVersionList.size(); i++) {
             PostVersion postVersion = currentPostVersionList.get(i);
-
-            List<BlockPair> blockPairsInCurrentPostVersionOfGT = new ArrayList<>();
-            for (BlockPair blockPairsGT : blockPairs_groundTruth) {
-                if (blockPairsGT.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
-                    blockPairsInCurrentPostVersionOfGT.add(blockPairsGT);
-                }
-            }
-
-            List<BlockPair> blockPairsInCurrentPostVersionOfCS = new ArrayList<>();
-            for (BlockPair blockPairsCS : blockPairs_computedSimilarity) {
-                if (blockPairsCS.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
-                    blockPairsInCurrentPostVersionOfCS.add(blockPairsCS);
-                }
-            }
-
-
-            List<String> connectionsInGT = new ArrayList<>();
-            for (BlockPair blockPair : blockPairsInCurrentPostVersionOfGT) {
-                connectionsInGT.add(
-                                blockPair.leftBlock.postBlock.getPostId() + ", " +
-                                blockPair.leftBlock.postBlock.getPostHistoryId() + ", " +
-                                blockPair.leftBlock.postBlock.getLocalId() + " -> " +
-                                blockPair.rightBlock.postBlock.getLocalId()
-                );
-            }
-
-            List<String> connectionsInCS = new ArrayList<>();
-            for (BlockPair blockPair : blockPairsInCurrentPostVersionOfCS) {
-                connectionsInCS.add(
-                        blockPair.leftBlock.postBlock.getPostId() + ", " +
-                                blockPair.leftBlock.postBlock.getPostHistoryId() + ", " +
-                                blockPair.leftBlock.postBlock.getLocalId() + " -> " +
-                                (blockPair.leftBlock.postBlock.getSucc() != null ? blockPair.leftBlock.postBlock.getSucc().getLocalId() : null)
-                );
-            }
-
-            if (!connectionsInGT.equals(connectionsInCS)) {
-                postVersionsWithDifferentLinks[i] = true;
-            }
+            postVersionsThatShouldBeInvestigated[i] = shouldPostVersionBeInvestigated(postVersion);
         }
 
         popUpWindowIfNoDifferencesAreFound();
 
-        postVersionsWithDifferentLinks[0] = true; // to show at least the first two versions
+        postVersionsThatShouldBeInvestigated[0] = true; // to show at least the first two versions
     }
+
+    private boolean shouldPostVersionBeInvestigated(PostVersion postVersion) {
+        // get all post blocks of current post version
+        List<BlockPair> blockPairsInCurrentPostVersionOfGT = new ArrayList<>();
+        for (BlockPair blockPairsGT : blockPairs_groundTruth) {
+            if (blockPairsGT.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
+                blockPairsInCurrentPostVersionOfGT.add(blockPairsGT);
+            }
+        }
+
+        List<BlockPair> blockPairsInCurrentPostVersionOfCS = new ArrayList<>();
+        for (BlockPair blockPairsCS : blockPairs_computedSimilarity) {
+            if (blockPairsCS.leftBlock.postBlock.getPostHistoryId().equals(postVersion.getPostHistoryId())) {
+                blockPairsInCurrentPostVersionOfCS.add(blockPairsCS);
+            }
+        }
+
+        // get all connections from ground truth and computed similarity that are subject of investigation
+        List<String> connectionsInGT = new ArrayList<>();
+        for (BlockPair blockPair : blockPairsInCurrentPostVersionOfGT) {
+
+            if (!matchesPostBlockTypeOfInvestigation(blockPair)) {
+                continue;
+            }
+
+            connectionsInGT.add(
+                    blockPair.leftBlock.postBlock.getPostId() + ", " +
+                            blockPair.leftBlock.postBlock.getPostHistoryId() + ", " +
+                            blockPair.leftBlock.postBlock.getLocalId() + " -> " +
+                            blockPair.rightBlock.postBlock.getLocalId()
+            );
+        }
+
+        List<String> connectionsInCS = new ArrayList<>();
+        for (BlockPair blockPair : blockPairsInCurrentPostVersionOfCS) {
+
+            if (!matchesPostBlockTypeOfInvestigation(blockPair)) {
+                continue;
+            }
+
+            connectionsInCS.add(
+                    blockPair.leftBlock.postBlock.getPostId() + ", " +
+                            blockPair.leftBlock.postBlock.getPostHistoryId() + ", " +
+                            blockPair.leftBlock.postBlock.getLocalId() + " -> " +
+                            (blockPair.leftBlock.postBlock.getSucc() != null ? blockPair.leftBlock.postBlock.getSucc().getLocalId() : null)
+            );
+        }
+
+
+        // mark version that should be investigated based on the user's preferences
+        boolean postVersionShouldBeInvestigated = false;
+        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
+            for (String connectionInCS : connectionsInCS) {
+                if (!connectionsInGT.contains(connectionInCS)) {
+                    postVersionShouldBeInvestigated = true;
+                }
+            }
+        } else if (errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
+            for (String connectionInGT : connectionsInGT) {
+                if (!connectionsInCS.contains(connectionInGT)) {
+                    postVersionShouldBeInvestigated = true;
+                }
+            }
+        }
+
+        return postVersionShouldBeInvestigated;
+    }
+
+    private boolean matchesPostBlockTypeOfInvestigation(BlockPair blockPair) {
+        int postBlockTypeId = blockPair.rightBlock.postBlock.getPostBlockTypeId();
+
+        return (
+                (postBlockTypeId == 1 && postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text)
+                        ||
+                (postBlockTypeId == 2 && postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code)
+        );
+
+
+    }
+
+
+
 
     private void popUpWindowIfNoDifferencesAreFound() {
         boolean differenceInConnectionsFound = false;
-        for (boolean differenceInConnection : postVersionsWithDifferentLinks) {
+        for (boolean differenceInConnection : postVersionsThatShouldBeInvestigated) {
             if (differenceInConnection) {
                 differenceInConnectionsFound = true;
                 break;
@@ -644,7 +721,7 @@ public class Controller {
             int tmp = currentLeftVersionInViewedPost;
             tmp--;
 
-            while (tmp > 0 && !postVersionsWithDifferentLinks[tmp]) {
+            while (tmp > 0 && !postVersionsThatShouldBeInvestigated[tmp]) {
                 tmp--;
             }
 
@@ -662,7 +739,7 @@ public class Controller {
             int tmp = currentLeftVersionInViewedPost;
             tmp++;
 
-            while(tmp < currentPostVersionList.size() -1 && !postVersionsWithDifferentLinks[tmp]) {
+            while(tmp < currentPostVersionList.size() -1 && !postVersionsThatShouldBeInvestigated[tmp]) {
                 tmp++;
             }
 
