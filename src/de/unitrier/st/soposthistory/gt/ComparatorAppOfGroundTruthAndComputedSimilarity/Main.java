@@ -19,6 +19,7 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(new URL("file:///" + absolutePathOfFXML));
         primaryStage.setTitle("Comparator App of Ground Truth and Computed Similarity");
         primaryStage.setScene(new Scene(root));
+        primaryStage.setMaximized(true);
         primaryStage.show();
 
     }
