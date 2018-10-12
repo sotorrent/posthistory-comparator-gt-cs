@@ -68,7 +68,7 @@ public class Controller {
     private List<BlockPair> blockPairs_groundTruth = new LinkedList<>();
     private List<BlockPair> blockPairs_computedSimilarity = new LinkedList<>();
 
-    private int currentLeftVersionInViewedPost = 0;
+    private int positionOfCurrentLeftVersionInViewedPost;
 
     private ToggleGroup group = new ToggleGroup();
 
@@ -176,7 +176,7 @@ public class Controller {
     }
 
     private void visualizePostBlocksOnLeftSide() {
-        List<PostBlockVersion> leftPostBlocks = currentPostVersionList.get(currentLeftVersionInViewedPost).getPostBlocks();
+        List<PostBlockVersion> leftPostBlocks = currentPostVersionList.get(positionOfCurrentLeftVersionInViewedPost).getPostBlocks();
         for (PostBlockVersion leftPostBlock : leftPostBlocks) {
             PostBlockWebView postBlockWebView = new PostBlockWebView(leftPostBlock);
 
@@ -210,7 +210,7 @@ public class Controller {
     }
 
     private void visualizePostBlocksOnRightSide() {
-        List<PostBlockVersion> rightPostBlocks = currentPostVersionList.get(currentLeftVersionInViewedPost + 1).getPostBlocks();
+        List<PostBlockVersion> rightPostBlocks = currentPostVersionList.get(positionOfCurrentLeftVersionInViewedPost + 1).getPostBlocks();
         for (PostBlockVersion rightPostBlock : rightPostBlocks) {
             PostBlockWebView postBlockWebView = new PostBlockWebView(rightPostBlock);
 
@@ -247,7 +247,7 @@ public class Controller {
         bottomLabel.setText(
                 "Post ID: " + currentPostVersionList.getFirst().getPostId()
                         + " ### number of versions: " + currentPostVersionList.size()
-                        + " ### you are now comparing the versions " + (currentLeftVersionInViewedPost + 1) + " and " + (currentLeftVersionInViewedPost + 2));
+                        + " ### you are now comparing the versions " + (positionOfCurrentLeftVersionInViewedPost + 1) + " and " + (positionOfCurrentLeftVersionInViewedPost + 2));
     }
 
     private void repaintAllConnectionsViaWorkaround() {
@@ -285,7 +285,7 @@ public class Controller {
     private void paintConnectionsBetweenPostBlocks() {
         if (checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                     Polygon polygon = paintPolygonOfConnections(blockPair.rightBlock, blockPair.leftBlock);
                     connectionsPane.getChildren().add(polygon);
                 }
@@ -294,7 +294,7 @@ public class Controller {
 
         if (checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                     Line line = paintLineOfConnections(blockPair.rightBlock, blockPair.leftBlock);
                     connectionsPane.getChildren().add(line);
                 }
@@ -344,7 +344,7 @@ public class Controller {
                 && checkBoxShowConnectionsOfGroundTruth.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_groundTruth) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -356,7 +356,7 @@ public class Controller {
                 && checkBoxShowConnectionsOfComputedSimilarity.isSelected()) {
             paintRightSideWithoutDiffs();
             for (BlockPair blockPair : blockPairs_computedSimilarity) {
-                if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+                if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                     visualizeRightSideOfPostBlockWithDiffs(
                             blockPair,
                             true
@@ -370,7 +370,7 @@ public class Controller {
 
     private void paintRightSideWithoutDiffs() {
         for (BlockPair blockPair : blockPairs_groundTruth) {
-            if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+            if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                 visualizeRightSideOfPostBlockWithDiffs(
                         blockPair,
                         false
@@ -378,7 +378,7 @@ public class Controller {
             }
         }
         for (BlockPair blockPair : blockPairs_computedSimilarity) {
-            if (blockPair.leftVersion == currentLeftVersionInViewedPost) {
+            if (blockPair.leftVersion == positionOfCurrentLeftVersionInViewedPost) {
                 visualizeRightSideOfPostBlockWithDiffs(
                         blockPair,
                         false
