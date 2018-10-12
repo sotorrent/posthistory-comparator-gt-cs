@@ -459,7 +459,6 @@ public class Controller {
     private void loadButtonClicked() {
         blockPairs_groundTruth.clear();
         blockPairs_computedSimilarity.clear();
-        currentLeftVersionInViewedPost = 0;
 
         int postId = Integer.valueOf(textFieldPostId.getText());
         try {
@@ -472,8 +471,9 @@ public class Controller {
         importConnectionsOfGroundTruth();
         importConnectionsOfComputedSimilarity();
 
-        postVersionsThatShouldBeInvestigated = new boolean[currentPostVersionList.size()];
-        identifyPostHistoriesToInvestigateBasedOnUsersPreferences();
+        identifyPostHistoriesToInvestigateBasedOnUsersPreferences ();
+
+        tryToFindFirstPositionOfVersionWithDifferntConnections();
 
         visualizeInGUI();
     }
@@ -590,52 +590,33 @@ public class Controller {
     }
 
     private void identifyPostHistoriesToInvestigateBasedOnUsersPreferences(){
+        postVersionsThatShouldBeInvestigated = new boolean[currentPostVersionList.size()];
         for (int i=0; i<currentPostVersionList.size(); i++) {
-            PostVersion postVersion = currentPostVersionList.get(i);
-            switch (errorTypeToInvestigate) {
-                case falsePositives:
-                    postVersionsThatShouldBeInvestigated[i] = containsFalsePositives(postVersion);
-                    break;
-                case falseNegatives:
-                    postVersionsThatShouldBeInvestigated[i] = containsFalseNegatives(postVersion);
-                    break;
-            }
+            postVersionsThatShouldBeInvestigated[i] = containsFalsePositivesOrFalseNegatives(currentPostVersionList.get(i));
         }
-
-        popUpWindowIfNoDifferencesAreFound();
-
-        postVersionsThatShouldBeInvestigated[0] = true; // to show at least the first two versions
     }
 
-    private boolean containsFalsePositives(PostVersion postVersion) {
+    private boolean containsFalsePositivesOrFalseNegatives(PostVersion postVersion) {
         List<String> connectionsInGT = getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(postVersion);
         List<String> connectionsInCS = getAllConnectionsFromComputedSimilarityThatAreSubjectOfInvestigation(postVersion);
 
-        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
-            for (String connectionInCS : connectionsInCS) {
-                if (!connectionsInGT.contains(connectionInCS)) {
-                    return true;
-                }
+        // contains false positives?
+        for (String connectionInCS : connectionsInCS) {
+            if (!connectionsInGT.contains(connectionInCS)) {
+                return true;
+            }
+        }
+
+        // contains false negatives?
+        for (String connectionInGT : connectionsInGT) {
+            if (!connectionsInCS.contains(connectionInGT)) {
+                return true;
             }
         }
 
         return false;
     }
 
-    private boolean containsFalseNegatives(PostVersion postVersion) {
-        List<String> connectionsInGT = getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(postVersion);
-        List<String> connectionsInCS = getAllConnectionsFromComputedSimilarityThatAreSubjectOfInvestigation(postVersion);
-
-        if (errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
-            for (String connectionInGT : connectionsInGT) {
-                if (!connectionsInCS.contains(connectionInGT)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     private List<String> getAllConnectionsFromGroundTruthThatAreSubjectOfInvestigation(PostVersion postVersion) {
         // get all post blocks of current post version
@@ -703,27 +684,27 @@ public class Controller {
 
     }
 
+    private void tryToFindFirstPositionOfVersionWithDifferntConnections() {
+        positionOfCurrentLeftVersionInViewedPost = 0;
 
-    private void popUpWindowIfNoDifferencesAreFound() {
-        if (!foundDifferencesInConnections()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Information about the connections");
-            alert.setHeaderText(null);
-            alert.setContentText("Connections of Ground Truth and computed Similarity are equal!");
+        while (!postVersionsThatShouldBeInvestigated[positionOfCurrentLeftVersionInViewedPost]) {
+            positionOfCurrentLeftVersionInViewedPost++;
+        }
 
-            alert.showAndWait();
+        if (positionOfCurrentLeftVersionInViewedPost >= postVersionsThatShouldBeInvestigated.length - 1) {
+            positionOfCurrentLeftVersionInViewedPost = 0;
+            popUpWindowAndShowThatNoDifferencesWereFound();
         }
     }
 
-    private boolean foundDifferencesInConnections() {
-        for (boolean differenceInConnection : postVersionsThatShouldBeInvestigated) {
-            if (differenceInConnection) {
-                return true;
-            }
-        }
-        return false;
-    }
+    private void popUpWindowAndShowThatNoDifferencesWereFound() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information about the connections");
+        alert.setHeaderText(null);
+        alert.setContentText("Connections of Ground Truth and computed Similarity are equal!");
 
+        alert.showAndWait();
+    }
 
     @FXML
     public void buttonBackClicked() {
