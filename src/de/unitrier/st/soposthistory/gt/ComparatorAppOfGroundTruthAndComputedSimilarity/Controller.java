@@ -93,33 +93,23 @@ public class Controller {
     private void setupPreferencesOfInvestigation () {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Setup preferences of investigation");
-        alert.setHeaderText("Choose the types you like to investigate:");
+        alert.setHeaderText("Choose the type of post blocks you like to investigate:");
 
-        ButtonType falsePositivesCode = new ButtonType("False positives for code");
-        ButtonType falseNegativesCode = new ButtonType("False negatives for code");
-        ButtonType falsePositivesText = new ButtonType("False positives for text");
-        ButtonType falseNegativesText = new ButtonType("False negatives for text");
+        ButtonType buttonInvestigateText = new ButtonType("Text blocks");
+        ButtonType buttonInvestigateCode = new ButtonType("Code blocks");
 
         // Remove default ButtonTypes
         alert.getButtonTypes().clear();
 
-        alert.getButtonTypes().addAll(falsePositivesCode, falseNegativesCode, falsePositivesText, falseNegativesText);
+        alert.getButtonTypes().addAll(buttonInvestigateText, buttonInvestigateCode);
 
         Optional<ButtonType> option = alert.showAndWait();
 
         if (option.isPresent()) {
-            if (option.get() == falsePositivesCode) {
-                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Code;
-                errorTypeToInvestigate = ErrorTypeToInvestigate.falsePositives;
-            } else if (option.get() == falseNegativesCode) {
-                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Code;
-                errorTypeToInvestigate = ErrorTypeToInvestigate.falseNegatives;
-            } else if (option.get() == falsePositivesText) {
+            if (option.get() == buttonInvestigateText) {
                 postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Text;
-                errorTypeToInvestigate = ErrorTypeToInvestigate.falsePositives;
-            } else if (option.get() == falseNegativesText) {
-                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Text;
-                errorTypeToInvestigate = ErrorTypeToInvestigate.falseNegatives;
+            } else if (option.get() == buttonInvestigateCode) {
+                postBlockTypeToInvestigate = PostBlockTypeToInvestigate.Code;
             }
         }
     }
@@ -134,14 +124,10 @@ public class Controller {
 
     // helping methods for setup of directory
     private void setPathToRootOfPostVersionLists() {
-        if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text && errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
-            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fp_text");
-        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text && errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
-            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fn_text");
-        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code && errorTypeToInvestigate == ErrorTypeToInvestigate.falsePositives) {
-            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fp_code");
-        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code && errorTypeToInvestigate == ErrorTypeToInvestigate.falseNegatives) {
-            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "fn_code");
+        if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Text) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "text");
+        } else if (postBlockTypeToInvestigate == PostBlockTypeToInvestigate.Code) {
+            pathToSelectedRootOfPostVersionLists = Paths.get("testdata", "files to investigate", "code");
         }
     }
 
