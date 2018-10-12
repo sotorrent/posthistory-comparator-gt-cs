@@ -727,37 +727,35 @@ public class Controller {
 
     @FXML
     public void buttonBackClicked() {
-        if (currentLeftVersionInViewedPost > 0) {
-            int tmp = currentLeftVersionInViewedPost;
+        if (positionOfCurrentLeftVersionInViewedPost > 0) {
+            int tmp = positionOfCurrentLeftVersionInViewedPost;
             tmp--;
 
             while (tmp > 0 && !postVersionsThatShouldBeInvestigated[tmp]) {
                 tmp--;
             }
 
-            if (tmp >= 0) {
-                currentLeftVersionInViewedPost = tmp;
+            if (tmp >= 0 && postVersionsThatShouldBeInvestigated[tmp]) {
+                positionOfCurrentLeftVersionInViewedPost = tmp;
                 visualizeInGUI();
             }
-
         }
     }
 
     @FXML
     public void buttonNextClicked() {
-        if (currentLeftVersionInViewedPost < currentPostVersionList.size() - 2) {
-            int tmp = currentLeftVersionInViewedPost;
+        if (positionOfCurrentLeftVersionInViewedPost < currentPostVersionList.size() - 2) {
+            int tmp = positionOfCurrentLeftVersionInViewedPost;
             tmp++;
 
             while(tmp < currentPostVersionList.size() -1 && !postVersionsThatShouldBeInvestigated[tmp]) {
                 tmp++;
             }
 
-            if (tmp < currentPostVersionList.size() - 1) {
-                currentLeftVersionInViewedPost = tmp;
+            if (tmp < currentPostVersionList.size() - 1 && postVersionsThatShouldBeInvestigated[tmp]) {
+                positionOfCurrentLeftVersionInViewedPost = tmp;
                 visualizeInGUI();
             }
-
         }
     }
 }
