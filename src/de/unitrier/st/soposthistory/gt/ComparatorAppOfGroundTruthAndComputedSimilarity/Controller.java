@@ -77,17 +77,14 @@ public class Controller {
     private enum ErrorTypeToInvestigate {falsePositives, falseNegatives}
 
     private PostBlockTypeToInvestigate postBlockTypeToInvestigate;
-    private ErrorTypeToInvestigate errorTypeToInvestigate;
 
 
     @FXML
-    private void initialize(){
-
+    private void initialize (){
         setupPreferencesOfInvestigation();
-
         setDirectoryOfPostVersionLists();
-
         unionRadioButtonsForDiffToSameGroup();
+        setDefaultEnablingOfButtons();
     }
 
     private void setupPreferencesOfInvestigation () {
@@ -147,8 +144,12 @@ public class Controller {
         radioButtonShowNoDiffs.setToggleGroup(group);
         radioButtonShowDiffsOfGroundTruth.setToggleGroup(group);
         radioButtonShowDiffsOfComputedSimilarity.setToggleGroup(group);
+    }
 
+    private void setDefaultEnablingOfButtons () {
         radioButtonShowNoDiffs.setSelected(true);
+        checkBoxShowConnectionsOfGroundTruth.setSelected(true);
+        checkBoxShowConnectionsOfComputedSimilarity.setSelected(true);
     }
 
 
