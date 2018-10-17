@@ -1,0 +1,6 @@
+PostId,Versions,Type,Comment
+1366329,1+2,FP,match syntactically correct
+1870600,"4+5, 5+6",FP+FN,--> test case
+2857307,1+2,FP,match syntactically correct
+5968026,3+4,FN,"semantically similar, syntactically too different"
+7016109,3+4,FP+FN,--> test case (wrong post block extraction?)
