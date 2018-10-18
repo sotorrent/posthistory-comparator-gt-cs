@@ -473,7 +473,7 @@ public class Controller {
 
         identifyPostHistoriesToInvestigateBasedOnUsersPreferences ();
 
-        tryToFindFirstPositionOfVersionWithDifferntConnections();
+        tryToFindFirstPositionOfVersionWithDifferentConnections();
 
         visualizeInGUI();
     }
@@ -684,7 +684,7 @@ public class Controller {
 
     }
 
-    private void tryToFindFirstPositionOfVersionWithDifferntConnections() {
+    private void tryToFindFirstPositionOfVersionWithDifferentConnections() {
         positionOfCurrentLeftVersionInViewedPost = 0;
 
         while (positionOfCurrentLeftVersionInViewedPost < postVersionsThatShouldBeInvestigated.length-1
