@@ -687,11 +687,12 @@ public class Controller {
     private void tryToFindFirstPositionOfVersionWithDifferntConnections() {
         positionOfCurrentLeftVersionInViewedPost = 0;
 
-        while (!postVersionsThatShouldBeInvestigated[positionOfCurrentLeftVersionInViewedPost]) {
+        while (positionOfCurrentLeftVersionInViewedPost < postVersionsThatShouldBeInvestigated.length-1
+                && !postVersionsThatShouldBeInvestigated[positionOfCurrentLeftVersionInViewedPost]) {
             positionOfCurrentLeftVersionInViewedPost++;
         }
 
-        if (positionOfCurrentLeftVersionInViewedPost >= postVersionsThatShouldBeInvestigated.length - 1) {
+        if (!postVersionsThatShouldBeInvestigated[positionOfCurrentLeftVersionInViewedPost]) {
             positionOfCurrentLeftVersionInViewedPost = 0;
             popUpWindowAndShowThatNoDifferencesWereFound();
         }
