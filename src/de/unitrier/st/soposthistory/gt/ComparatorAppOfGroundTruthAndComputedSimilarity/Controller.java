@@ -468,6 +468,8 @@ public class Controller {
             return;
         }
 
+        this.currentPostVersionList.normalizeLinks();
+
         importConnectionsOfGroundTruth();
         importConnectionsOfComputedSimilarity();
 
