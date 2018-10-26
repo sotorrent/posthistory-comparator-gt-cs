@@ -54,7 +54,7 @@
         <dependency>
             <groupId>org.sotorrent</groupId>
             <artifactId>posthistory-extractor</artifactId>
-            <version>${posthistory-extractor.version}</version>
+            <version>LATEST</version>
         </dependency>
         <!-- https://github.com/sotorrent/util/tree/master/releases/ -->
         <dependency>

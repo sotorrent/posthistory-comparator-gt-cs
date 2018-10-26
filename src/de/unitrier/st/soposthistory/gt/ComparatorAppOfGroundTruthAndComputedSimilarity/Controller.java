@@ -572,18 +572,18 @@ public class Controller {
     private void importConnectionsOfComputedSimilarity() {
         currentPostVersionList.processVersionHistory();
 
-        for (int i = 0; i< currentPostVersionList.size()-1 ; i++) {
-            for (int j = 0; j< currentPostVersionList.get(i).getPostBlocks().size(); j++) {
-                if (currentPostVersionList.get(i).getPostBlocks().get(j).getSucc() != null) {
+        for (int i=1; i<currentPostVersionList.size() ; i++) {
+            for (int j=0; j<currentPostVersionList.get(i).getPostBlocks().size(); j++) {
+                if (currentPostVersionList.get(i).getPostBlocks().get(j).getPred() != null) {
                     blockPairs_computedSimilarity.add(
                             new BlockPair(
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(i).getPostBlocks().get(j)
+                                            currentPostVersionList.get(i).getPostBlocks().get(j).getPred()
                                     ),
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(i).getPostBlocks().get(j).getSucc()
+                                            currentPostVersionList.get(i).getPostBlocks().get(j)
                                     ),
-                                    i
+                                    i-1
                             )
                     );
                 }
