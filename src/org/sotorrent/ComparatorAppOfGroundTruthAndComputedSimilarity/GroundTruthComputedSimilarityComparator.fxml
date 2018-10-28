@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:id="frame" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+      minWidth="-Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity.Controller">
+    <MenuBar VBox.vgrow="ALWAYS">
+        <Menu mnemonicParsing="false" text="File">
+            <MenuItem mnemonicParsing="false" text="Close"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem mnemonicParsing="false" text="About"/>
+        </Menu>
+    </MenuBar>
+    <Pane maxHeight="-Infinity" maxWidth="-Infinity" VBox.vgrow="ALWAYS">
+        <Button layoutX="14.0" layoutY="44.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false"
+                onAction="#buttonBackClicked" text="Back"/>
+        <Button layoutX="70.0" layoutY="44.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false"
+                onAction="#buttonNextClicked" text="Next"/>
+        <TextField fx:id="textFieldPostId" layoutX="208.0" layoutY="9.0" maxHeight="-Infinity"
+                   maxWidth="-Infinity"/>
+        <CheckBox fx:id="checkBoxShowConnectionsOfGroundTruth" layoutX="399.0" layoutY="6.0" maxHeight="-Infinity"
+                  maxWidth="-Infinity" mnemonicParsing="false" onAction="#visualizeRelationsBetweenPostBlocks"
+                  text="Show connections of Ground Truth"/>
+        <CheckBox fx:id="checkBoxShowConnectionsOfComputedSimilarity" layoutX="399.0" layoutY="25.0"
+                  maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false"
+                  onAction="#visualizeRelationsBetweenPostBlocks" text="Show connections of Computed Similarity"/>
+        <Button layoutX="14.0" layoutY="9.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false"
+                onAction="#loadButtonClicked" text="Load GT and metric links for post:"/>
+        <RadioButton fx:id="radioButtonShowNoDiffs" layoutX="399.0" layoutY="47.0" maxHeight="-Infinity"
+                     maxWidth="-Infinity" mnemonicParsing="false" text="Show no diffs"/>
+        <RadioButton fx:id="radioButtonShowDiffsOfGroundTruth" layoutX="399.0" layoutY="65.0" maxHeight="-Infinity"
+                     maxWidth="-Infinity" mnemonicParsing="false" text="Show diffs of Ground Truth"/>
+        <RadioButton fx:id="radioButtonShowDiffsOfComputedSimilarity" layoutX="399.0" layoutY="83.0"
+                     maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false"
+                     text="Show diffs of Computed Similarity"/>
+    </Pane>
+    <GridPane VBox.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+        </rowConstraints>
+
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+            <ColumnConstraints/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="10.0" minHeight="0.0" prefHeight="10.0" vgrow="SOMETIMES"/>
+            <RowConstraints maxHeight="10.0" minHeight="0.0" prefHeight="0.0"/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+            <RowConstraints/>
+        </rowConstraints>
+        <ScrollPane fitToHeight="true" fitToWidth="true" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"
+                    VBox.vgrow="ALWAYS">
+            <GridPane>
+                <columnConstraints>
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                </rowConstraints>
+                <ScrollPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                            minHeight="-Infinity" minWidth="-Infinity" prefViewportHeight="98.0"
+                            prefViewportWidth="630.0">
+                    <HBox GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.valignment="TOP"
+                          GridPane.vgrow="ALWAYS">
+                        <VBox fx:id="leftVBox" maxHeight="1.7976931348623157E308"
+                              maxWidth="1.7976931348623157E308"/>
+                        <Pane fx:id="connectionsPane" HBox.hgrow="ALWAYS"/>
+                        <VBox fx:id="rightVBox" maxHeight="1.7976931348623157E308"
+                              maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </ScrollPane>
+            </GridPane>
+        </ScrollPane>
+    </GridPane>
+    <Label fx:id="bottomLabel"
+           text="Post ID: - ### number of versions: - ### you are now comparing the versions - and -"/>
+</VBox>

@@ -1,4 +1,4 @@
-package de.unitrier.st.soposthistory.gt.ComparatorAppOfGroundTruthAndComputedSimilarity;
+package org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity;
 
 
 import javafx.application.Application;
@@ -21,7 +21,6 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.setMaximized(true);
         primaryStage.show();
-
     }
 
     public static void main(String[] args) {

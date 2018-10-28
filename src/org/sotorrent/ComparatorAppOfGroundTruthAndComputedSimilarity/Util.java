@@ -1,4 +1,4 @@
-package de.unitrier.st.soposthistory.gt.ComparatorAppOfGroundTruthAndComputedSimilarity;
+package org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity;
 
 import org.sotorrent.posthistoryextractor.diffs.LineDiff;
 import org.sotorrent.posthistoryextractor.diffs.diff_match_patch;

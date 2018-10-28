@@ -1,4 +1,4 @@
-package de.unitrier.st.soposthistory.gt.ComparatorAppOfGroundTruthAndComputedSimilarity;
+package org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity;
 
 
 import javafx.application.Platform;
@@ -74,7 +74,6 @@ public class Controller {
 
 
     private enum PostBlockTypeToInvestigate {Text, Code}
-    private enum ErrorTypeToInvestigate {falsePositives, falseNegatives}
 
     private PostBlockTypeToInvestigate postBlockTypeToInvestigate;
 
@@ -570,9 +569,7 @@ public class Controller {
     }
 
     private void importConnectionsOfComputedSimilarity() {
-        currentPostVersionList.processVersionHistory();
-
-        for (int i=1; i<currentPostVersionList.size() ; i++) {
+        for (int i=1; i<currentPostVersionList.size(); i++) {
             for (int j=0; j<currentPostVersionList.get(i).getPostBlocks().size(); j++) {
                 if (currentPostVersionList.get(i).getPostBlocks().get(j).getPred() != null) {
                     blockPairs_computedSimilarity.add(
@@ -583,7 +580,7 @@ public class Controller {
                                     new PostBlockWebView(
                                             currentPostVersionList.get(i).getPostBlocks().get(j)
                                     ),
-                                    i-1
+                                    i - 1
                             )
                     );
                 }

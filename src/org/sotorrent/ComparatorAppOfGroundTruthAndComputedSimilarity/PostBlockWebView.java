@@ -1,4 +1,4 @@
-package de.unitrier.st.soposthistory.gt.ComparatorAppOfGroundTruthAndComputedSimilarity;
+package org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity;
 
 import org.sotorrent.posthistoryextractor.blocks.PostBlockVersion;
 
