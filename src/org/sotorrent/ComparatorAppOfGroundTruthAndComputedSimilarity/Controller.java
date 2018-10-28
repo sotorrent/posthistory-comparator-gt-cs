@@ -77,6 +77,9 @@ public class Controller {
 
     private PostBlockTypeToInvestigate postBlockTypeToInvestigate;
 
+    // map postHistoryIds to version for easier assignment
+    Map<Integer, Integer> mapPostHistoryIdToVersion = new HashMap<>();
+
 
     @FXML
     private void initialize (){
@@ -151,6 +154,15 @@ public class Controller {
         checkBoxShowConnectionsOfComputedSimilarity.setSelected(true);
     }
 
+    private void mapPostHistoryIdToVersions () {
+        int version = 0;
+        for (PostVersion postVersion : currentPostVersionList) {
+            int postHistoryId = postVersion.getPostHistoryId();
+            if (!mapPostHistoryIdToVersion.containsKey(postHistoryId)) {
+                mapPostHistoryIdToVersion.put(postHistoryId, version++);
+            }
+        }
+    }
 
 
     /* GUI */
@@ -467,6 +479,8 @@ public class Controller {
             return;
         }
 
+        mapPostHistoryIdToVersions();
+
         this.currentPostVersionList.normalizeLinks();
 
         importConnectionsOfGroundTruth();
@@ -539,27 +553,33 @@ public class Controller {
             });
 
             // add connections to block pairs
-            int version = 0;
-            Integer lastPostHistoryId = null;
             for (PostBlockLifeSpanVersion postBlockLifeSpanVersion : postBlockLifeSpanVersionList) {
+                if (postBlockLifeSpanVersion.getPredLocalId() != null) {
 
-                if (lastPostHistoryId != null && postBlockLifeSpanVersion.getPostHistoryId() > lastPostHistoryId)
-                    version++;
+                    int rightVersionNumber = mapPostHistoryIdToVersion.get(postBlockLifeSpanVersion.getPostHistoryId());
+                    int rightLocalId = postBlockLifeSpanVersion.getLocalId();
 
-                if (postBlockLifeSpanVersion.getSuccLocalId() != null) {
+                    int leftVersionNumber = mapPostHistoryIdToVersion.get(currentPostVersionList.get(rightVersionNumber - 1).getPostHistoryId());
+                    int leftLocalId = postBlockLifeSpanVersion.getPredLocalId();
+
                     blockPairs_groundTruth.add(
                             new BlockPair(
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(version).getPostBlocks().get(postBlockLifeSpanVersion.getLocalId() - 1)
+                                            currentPostVersionList
+                                                    .get(leftVersionNumber)
+                                                    .getPostBlocks()
+                                                    .get(leftLocalId - 1)
                                     ),
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(version + 1).getPostBlocks().get(postBlockLifeSpanVersion.getSuccLocalId() - 1)
+                                            currentPostVersionList
+                                                    .get(rightVersionNumber)
+                                                    .getPostBlocks()
+                                                    .get(rightLocalId - 1)
                                     ),
-                                    version
+                                    leftVersionNumber
                             )
                     );
 
-                    lastPostHistoryId = postBlockLifeSpanVersion.getPostHistoryId();
                 }
             }
         } catch (IOException e) {
@@ -569,18 +589,21 @@ public class Controller {
     }
 
     private void importConnectionsOfComputedSimilarity() {
-        for (int i=1; i<currentPostVersionList.size(); i++) {
-            for (int j=0; j<currentPostVersionList.get(i).getPostBlocks().size(); j++) {
-                if (currentPostVersionList.get(i).getPostBlocks().get(j).getPred() != null) {
+        for (PostVersion postVersion : currentPostVersionList) {
+            for (PostBlockVersion postBlockVersion : postVersion.getPostBlocks()) {
+
+                PostBlockVersion predPostBlockVersion = postBlockVersion.getPred();
+
+                if (predPostBlockVersion != null) {
                     blockPairs_computedSimilarity.add(
                             new BlockPair(
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(i).getPostBlocks().get(j).getPred()
+                                            predPostBlockVersion
                                     ),
                                     new PostBlockWebView(
-                                            currentPostVersionList.get(i).getPostBlocks().get(j)
+                                            postBlockVersion
                                     ),
-                                    i - 1
+                                    mapPostHistoryIdToVersion.get(predPostBlockVersion.getPostHistoryId())
                             )
                     );
                 }
