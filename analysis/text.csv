@@ -1,6 +1,0 @@
-PostId,Versions,Type,Comment
-122291,2+3,FN,"semantically similar, syntactically too different (overlap would have worked --> text case for that)"
-1870600,3+4,FN,"semantically similar, syntactically too different (overlap would have worked --> text case for that)"
-2579869,1+2,FP,"--> test case (empty text block, wrong post block extraction?)"
-2749893,1+2,???,breaks GUI
-3044193,3+4,FN,"not similar, error in GT?"
