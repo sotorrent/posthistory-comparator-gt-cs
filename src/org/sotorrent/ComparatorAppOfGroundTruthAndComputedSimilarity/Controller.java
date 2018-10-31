@@ -59,7 +59,7 @@ public class Controller {
 
     /* intern variables */
     private Path pathToSelectedRootOfPostVersionLists;
-    private Map<Integer, File> allIndexedPostVersionLists;
+    private Map<Integer, File> allIndexedPostVersionLists = new HashMap<>();
     private PostVersionList currentPostVersionList;
     private boolean[] postVersionsThatShouldBeInvestigated;
 
@@ -78,7 +78,9 @@ public class Controller {
     private PostBlockTypeToInvestigate postBlockTypeToInvestigate;
 
     // map postHistoryIds to version for easier assignment
-    Map<Integer, Integer> mapPostHistoryIdToVersion = new HashMap<>();
+    private Map<Integer, Integer> mapPostHistoryIdToVersion = new HashMap<>();
+
+    private List<PostBlockLifeSpanVersion> groundTruth_postBlockLifeSpanVersionList = new ArrayList<>();
 
 
     @FXML
@@ -136,7 +138,6 @@ public class Controller {
             return;
         }
 
-        allIndexedPostVersionLists = new HashMap<>();
         for (File postVersionListsInCSVFile : postVersionListsInCSVFiles) {
             allIndexedPostVersionLists.put(Integer.valueOf(postVersionListsInCSVFile.getName().replace(".csv", "")), postVersionListsInCSVFile);
         }
@@ -468,8 +469,8 @@ public class Controller {
     /* Buttons */
     @FXML
     private void loadButtonClicked() {
-        blockPairs_groundTruth.clear();
-        blockPairs_computedSimilarity.clear();
+
+        clearInternVariables ();
 
         int postId = Integer.valueOf(textFieldPostId.getText());
         try {
@@ -487,7 +488,9 @@ public class Controller {
         importConnectionsOfGroundTruth();
         importConnectionsOfComputedSimilarity();
 
-        identifyPostHistoriesToInvestigateBasedOnUsersPreferences ();
+        checkComparabilityOfGroundTruthAndExtractedPostBlocks();
+
+        identifyPostHistoriesToInvestigateBasedOnUsersPreferences();
 
         tryToFindFirstPositionOfVersionWithDifferentConnections();
 
@@ -495,6 +498,22 @@ public class Controller {
     }
 
     // helping methods to realize function of load button
+    private void clearInternVariables () {
+
+        currentPostVersionList = null;
+        postVersionsThatShouldBeInvestigated = null;
+
+        allElementsInGUI.clear();
+
+        blockPairs_groundTruth.clear();
+        blockPairs_computedSimilarity.clear();
+
+        positionOfCurrentLeftVersionInViewedPost = 0;
+
+        mapPostHistoryIdToVersion.clear();
+        groundTruth_postBlockLifeSpanVersionList.clear();
+    }
+
     private void importConnectionsOfGroundTruth() {
 
         try {
@@ -503,8 +522,6 @@ public class Controller {
 
             Pattern groundTruthCSVRegex = Pattern.compile("(\\d+);(\\d+);([12]);(\\d+);(null|\\d+);(null|\\d+);");
             Matcher matcher = groundTruthCSVRegex.matcher(completedFileCSV);
-
-            List<PostBlockLifeSpanVersion> postBlockLifeSpanVersionList = new LinkedList<>();
 
             while (matcher.find()) {
                 int postId = Integer.parseInt(matcher.group(1));
@@ -526,7 +543,7 @@ public class Controller {
                 }
 
 
-                postBlockLifeSpanVersionList.add(
+                groundTruth_postBlockLifeSpanVersionList.add(
                         new PostBlockLifeSpanVersion(
                                 postId,
                                 postHistoryId,
@@ -539,7 +556,7 @@ public class Controller {
             }
 
             // sort lines for easier assignment
-            postBlockLifeSpanVersionList.sort((o1, o2) -> {
+            groundTruth_postBlockLifeSpanVersionList.sort((o1, o2) -> {
                 if (o1.getPostId() < o2.getPostId()) {
                     return -1;
                 } else if (o1.getPostId() > o2.getPostId()) {
@@ -554,7 +571,7 @@ public class Controller {
             });
 
             // add connections to block pairs
-            for (PostBlockLifeSpanVersion postBlockLifeSpanVersion : postBlockLifeSpanVersionList) {
+            for (PostBlockLifeSpanVersion postBlockLifeSpanVersion : groundTruth_postBlockLifeSpanVersionList) {
                 if (postBlockLifeSpanVersion.getPredLocalId() != null) {
 
                     int rightVersionNumber = mapPostHistoryIdToVersion.get(postBlockLifeSpanVersion.getPostHistoryId());
@@ -611,6 +628,78 @@ public class Controller {
             }
         }
     }
+
+    private void checkComparabilityOfGroundTruthAndExtractedPostBlocks() {
+
+        // check whether all post blocks from extracted post blocks are found in the ground truth
+        for (PostVersion postVersion : this.currentPostVersionList) {
+            for (PostBlockVersion postBlockVersion : postVersion.getPostBlocks()) {
+
+                int postId_cs = postBlockVersion.getPostId();
+                int postHistoryId_cs = postBlockVersion.getPostHistoryId();
+                int localId_cs = postBlockVersion.getLocalId();
+
+                boolean postBlockIsInGT = false;
+                for (PostBlockLifeSpanVersion postBlockLifeSpanVersion : groundTruth_postBlockLifeSpanVersionList) {
+                    int postId_gt = postBlockLifeSpanVersion.getPostId();
+                    int postHistoryId_gt = postBlockLifeSpanVersion.getPostHistoryId();
+                    int localId_gt = postBlockLifeSpanVersion.getLocalId();
+
+                    boolean postBlockFromCSisInGT = (postId_cs == postId_gt && postHistoryId_cs == postHistoryId_gt && localId_cs == localId_gt);
+
+                    if (postBlockFromCSisInGT) {
+                        postBlockIsInGT = true;
+                        break;
+                    }
+                }
+
+                if (!postBlockIsInGT) {
+                    popUpWindowThatComputedSimilarityDiffersToGroundTruth();
+                    break;
+                }
+            }
+        }
+
+
+        // check whether all post blocks from ground truth are found in the extracted post blocks
+        for (PostBlockLifeSpanVersion postBlockLifeSpanVersion : groundTruth_postBlockLifeSpanVersionList) {
+            int postId_gt = postBlockLifeSpanVersion.getPostId();
+            int postHistoryId_gt = postBlockLifeSpanVersion.getPostHistoryId();
+            int localId_gt = postBlockLifeSpanVersion.getLocalId();
+
+            boolean postBlockIsInCS = false;
+            for (PostVersion postVersion : this.currentPostVersionList) {
+                for (PostBlockVersion postBlockVersion : postVersion.getPostBlocks()) {
+
+                    int postId_cs = postBlockVersion.getPostId();
+                    int postHistoryId_cs = postBlockVersion.getPostHistoryId();
+                    int localId_cs = postBlockVersion.getLocalId();
+
+                    boolean postBlockFromCSisInGT = (postId_cs == postId_gt && postHistoryId_cs == postHistoryId_gt && localId_cs == localId_gt);
+
+                    if (postBlockFromCSisInGT) {
+                        postBlockIsInCS = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!postBlockIsInCS) {
+                popUpWindowThatComputedSimilarityDiffersToGroundTruth();
+                break;
+            }
+        }
+    }
+
+    private void popUpWindowThatComputedSimilarityDiffersToGroundTruth() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information about the connections");
+        alert.setHeaderText(null);
+        alert.setContentText("The number of post blocks in the computed similarity differs from the number of the ground truth!");
+
+        alert.showAndWait();
+    }
+
 
     private void identifyPostHistoriesToInvestigateBasedOnUsersPreferences(){
         postVersionsThatShouldBeInvestigated = new boolean[currentPostVersionList.size()];
