@@ -473,7 +473,7 @@ public class Controller {
 
         int postId = Integer.valueOf(textFieldPostId.getText());
         try {
-            this.currentPostVersionList = PostVersionList.readFromCSV(Paths.get(String.valueOf(allIndexedPostVersionLists.get(postId))).getParent(), postId, (byte) 2);
+            this.currentPostVersionList = PostVersionList.readFromCSV(Paths.get(String.valueOf(allIndexedPostVersionLists.get(postId))).getParent(), postId, (byte) 2, false);
         } catch (Exception e) {
             System.err.println("Could not parse CSV with post id " + postId + "." + "\n" + "Make sure the file is well-formed and listed in the stated path.");
             return;
@@ -482,6 +482,7 @@ public class Controller {
         mapPostHistoryIdToVersions();
 
         this.currentPostVersionList.normalizeLinks();
+        this.currentPostVersionList.processVersionHistory();
 
         importConnectionsOfGroundTruth();
         importConnectionsOfComputedSimilarity();
