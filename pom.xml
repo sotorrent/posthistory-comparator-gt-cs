@@ -15,8 +15,8 @@
         <project.build.sourceDirectory>src</project.build.sourceDirectory>
         <!-- Maven -->
         <maven.mainclass>org.sotorrent.ComparatorAppOfGroundTruthAndComputedSimilarity.Main</maven.mainclass>
-        <maven.compiler.target>10</maven.compiler.target>
-        <maven.compiler.source>10</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.1.0</maven.jar.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
@@ -50,13 +50,13 @@
     </repositories>
 
     <dependencies>
-        <!-- https://github.com/sotorrent/so-posthistory-extractor/tree/master/releases/ -->
+        <!-- https://github.com/sotorrent/so-posthistory-extractor/ -->
         <dependency>
             <groupId>org.sotorrent</groupId>
             <artifactId>posthistory-extractor</artifactId>
             <version>${posthistory-extractor.version}</version>
         </dependency>
-        <!-- https://github.com/sotorrent/util/tree/master/releases/ -->
+        <!-- https://github.com/sotorrent/util/ -->
         <dependency>
             <groupId>org.sotorrent</groupId>
             <artifactId>util</artifactId>
