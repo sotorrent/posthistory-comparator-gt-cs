@@ -68,6 +68,7 @@ public class Controller {
     private List<BlockPair> blockPairs_groundTruth = new LinkedList<>();
     private List<BlockPair> blockPairs_computedSimilarity = new LinkedList<>();
 
+    private boolean userWantsToSkipVersions;
     private int positionOfCurrentLeftVersionInViewedPost;
 
     private ToggleGroup group = new ToggleGroup();
@@ -89,6 +90,7 @@ public class Controller {
         setDirectoryOfPostVersionLists();
         unionRadioButtonsForDiffToSameGroup();
         setDefaultEnablingOfButtons();
+        chooseWhetherVersionsWithEqualPredecessorsShouldBeSkipped();
     }
 
     private void setupPreferencesOfInvestigation () {
@@ -161,6 +163,30 @@ public class Controller {
             int postHistoryId = postVersion.getPostHistoryId();
             if (!mapPostHistoryIdToVersion.containsKey(postHistoryId)) {
                 mapPostHistoryIdToVersion.put(postHistoryId, version++);
+            }
+        }
+    }
+
+    private void chooseWhetherVersionsWithEqualPredecessorsShouldBeSkipped () {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Setup preferences of visualization");
+        alert.setHeaderText("Do you want to skip versions with equal predecessors?");
+
+        ButtonType buttonYESSkipVersions = new ButtonType("YES, skip versions with equal predecessors.");
+        ButtonType buttonNODontSkipVersions = new ButtonType("NO, show every version even when the predecessors are equal.");
+
+        // Remove default ButtonTypes
+        alert.getButtonTypes().clear();
+
+        alert.getButtonTypes().addAll(buttonYESSkipVersions, buttonNODontSkipVersions);
+
+        Optional<ButtonType> option = alert.showAndWait();
+
+        if (option.isPresent()) {
+            if (option.get() == buttonYESSkipVersions) {
+                userWantsToSkipVersions = true;
+            } else if (option.get() == buttonNODontSkipVersions) {
+                userWantsToSkipVersions = false;
             }
         }
     }
@@ -492,7 +518,11 @@ public class Controller {
 
         identifyPostHistoriesToInvestigateBasedOnUsersPreferences();
 
-        tryToFindFirstPositionOfVersionWithDifferentConnections();
+        if (userWantsToSkipVersions) {
+            tryToFindFirstPositionOfVersionWithDifferentConnections();
+        } else {
+            positionOfCurrentLeftVersionInViewedPost = 0;
+        }
 
         visualizeInGUI();
     }
@@ -821,16 +851,23 @@ public class Controller {
 
     @FXML
     public void buttonBackClicked() {
-        if (positionOfCurrentLeftVersionInViewedPost > 0) {
-            int tmp = positionOfCurrentLeftVersionInViewedPost;
-            tmp--;
-
-            while (tmp > 0 && !postVersionsThatShouldBeInvestigated[tmp]) {
+        if (userWantsToSkipVersions) {
+            if (positionOfCurrentLeftVersionInViewedPost > 0) {
+                int tmp = positionOfCurrentLeftVersionInViewedPost;
                 tmp--;
-            }
 
-            if (tmp >= 0 && postVersionsThatShouldBeInvestigated[tmp]) {
-                positionOfCurrentLeftVersionInViewedPost = tmp;
+                while (tmp > 0 && !postVersionsThatShouldBeInvestigated[tmp]) {
+                    tmp--;
+                }
+
+                if (tmp >= 0 && postVersionsThatShouldBeInvestigated[tmp]) {
+                    positionOfCurrentLeftVersionInViewedPost = tmp;
+                    visualizeInGUI();
+                }
+            }
+        } else {
+            if (positionOfCurrentLeftVersionInViewedPost > 0) {
+                positionOfCurrentLeftVersionInViewedPost--;
                 visualizeInGUI();
             }
         }
@@ -838,16 +875,23 @@ public class Controller {
 
     @FXML
     public void buttonNextClicked() {
-        if (positionOfCurrentLeftVersionInViewedPost < currentPostVersionList.size() - 2) {
-            int tmp = positionOfCurrentLeftVersionInViewedPost;
-            tmp++;
-
-            while(tmp < currentPostVersionList.size() -1 && !postVersionsThatShouldBeInvestigated[tmp]) {
+        if (userWantsToSkipVersions) {
+            if (positionOfCurrentLeftVersionInViewedPost < currentPostVersionList.size() - 2) {
+                int tmp = positionOfCurrentLeftVersionInViewedPost;
                 tmp++;
-            }
 
-            if (tmp < currentPostVersionList.size() - 1 && postVersionsThatShouldBeInvestigated[tmp]) {
-                positionOfCurrentLeftVersionInViewedPost = tmp;
+                while (tmp < currentPostVersionList.size() - 1 && !postVersionsThatShouldBeInvestigated[tmp]) {
+                    tmp++;
+                }
+
+                if (tmp < currentPostVersionList.size() - 1 && postVersionsThatShouldBeInvestigated[tmp]) {
+                    positionOfCurrentLeftVersionInViewedPost = tmp;
+                    visualizeInGUI();
+                }
+            }
+        } else {
+            if (positionOfCurrentLeftVersionInViewedPost < currentPostVersionList.size() - 2) {
+                positionOfCurrentLeftVersionInViewedPost++;
                 visualizeInGUI();
             }
         }
