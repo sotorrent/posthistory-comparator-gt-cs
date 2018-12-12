@@ -11,7 +11,7 @@ PostId;PostHistoryId;PostBlockTypeId;LocalId;PredLocalId;SuccLocalId;Comment
 25382089;71752659;1;4;null;null;
 25382089;71752659;2;5;null;null;
 25382089;71752659;1;6;2;2;
-25382089;71753073;2;1;1;null; Zusammengefügter Codeblock.  Aufgeteilter Codeblock
+25382089;71753073;2;1;1;1; Zusammengefügter Codeblock.  Aufgeteilter Codeblock
 25382089;71753073;1;2;6;6;
 25382089;71753721;2;1;1;1;
 25382089;71753721;1;2;null;2;
