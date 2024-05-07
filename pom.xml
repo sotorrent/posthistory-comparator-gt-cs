@@ -10,7 +10,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <javafx.version>12</javafx.version>
+        <javafx.version>17.0.10</javafx.version>
         <!-- Project -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
